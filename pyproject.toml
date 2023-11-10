@@ -3,7 +3,7 @@ name = "kmsearch"
 version = "0.1.0"
 description = "Add your description here"
 authors = [
-    { name = "Shimpei Ueno", email = "s_ueno@sugino.com" }
+    { name = "Shimpei Ueno", email = "" }
 ]
 dependencies = [
     "sqlalchemy>=2.0.22",

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from database_engine import Base, engine
+from datetime import datetime
 
 # Ocrモデルクラスを定義
 class OcrText(Base):
@@ -19,9 +20,31 @@ class OcrText(Base):
     box_3_y = Column(Integer)
     text = Column(String)
     confident = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     ocr = relationship("Ocr", back_populates="ocr_texts")
 
+    def to_dict(self):
+        return {
+            "ocr_text_id": self.ocr_text_id,
+            "box_0_x": self.box_0_x,
+            "box_0_y": self.box_0_y,
+            # ... 他の必要なフィールドも同様に追加
+            "text": self.text,
+            "confident": self.confident,
+        }
+
+    def up_dict(self):
+
+        return {
+            "ocr_text_id": self.ocr_text_id,
+            "box_0_x": self.box_0_x,
+            "box_0_y": self.box_0_y,
+            # ... 他の必要なフィールドも同様に追加
+            "text": self.text,
+            "confident": self.confident,
+        }
 
     def __str__(self):
         return "aaaa"

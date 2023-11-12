@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, JSON, ForeignKey
+from sqlalchemy import Column, String, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from database_engine import Base, engine
+from datetime import datetime
 
 # Ocrモデルクラスを定義
 class Ocr(Base):
@@ -12,12 +13,33 @@ class Ocr(Base):
     model_language = Column(String)
     custom_model_path = Column(String)
     ocr_result_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     ocr_texts = relationship("OcrText", back_populates="ocr")
     page = relationship("Page", back_populates="ocrs")
 
-    def __str__(self):
-        return "aaaa"
+    def to_dict(self):
+        return {
+            "ocr_id": self.ocr_id,
+            "page_id": self.page_id,
+            "model_language": self.model_language,
+            "custom_model_path": self.custom_model_path,
+            # "ocr_result_json": self.ocr_result_json,
+        }
+    def to_all_dict(self):
+        return {
+            "ocr_id": self.ocr_id,
+            "page_id": self.page_id,
+            "model_language": self.model_language,
+            "custom_model_path": self.custom_model_path,
+            # "ocr_result_json": self.ocr_result_json,
+            "ocr_texts": [ocr_text.to_dict() for ocr_text in self.ocr_texts],
+        }
+
+    def __repr__(self):
+        return f"<Ocr(ocr_id={self.ocr_id}, page_id={self.page_id}, model_language={self.model_language}, custom_model_path={self.custom_model_path}, created_at={self.created_at}, updated_at={self.updated_at})>"
+
 
 # データベースへのレコード追加関数
 def insert_ocr_data(page_id: str, model_language: str, custom_model_path: str, ocr_result_json: str) -> str:

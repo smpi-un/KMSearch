@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from database_engine import Base, engine
+from datetime import datetime
 
 # Pageモデルクラスを定義
 class Page(Base):
@@ -10,13 +11,23 @@ class Page(Base):
     page_id = Column(String, primary_key=True)
     document_id = Column(String, ForeignKey("document.document_id"))
     page_number = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     ocrs = relationship("Ocr", back_populates="page")
     # ページからファイルへのリレーションシップを設定
     document = relationship("Document", back_populates="pages")
 
-    def __str__(self):
-        return "aaaa"
+    def __repr__(self):
+        return f"<Page(page_id={self.page_id}, document_id={self.document_id}, page_number={self.page_number}, created_at={self.created_at}, updated_at={self.updated_at})>"
+
+
+    def to_dict(self):
+        return {
+             "page_id": self.page_id,
+             "document_id": self.document_id,
+             "page_number": self.page_number
+         }
 Base.metadata.create_all(engine)
 
 # データベースへのレコード追加関数

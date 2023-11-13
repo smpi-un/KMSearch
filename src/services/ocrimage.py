@@ -23,6 +23,7 @@ def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[
             shutil.copy(image_path, temp_image_path)
             
             # 一時フォルダにコピーした画像からテキストをOCRで抽出
+            print(temp_image_path)
             result = reader.readtext(temp_image_path, output_format='dict')
             # {'boxes':item[0],'text':item[1],'confident':item[2]}
             ocr_results.append(result)

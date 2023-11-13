@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -14,6 +14,8 @@ class File(Base):
     missing = Column(Boolean)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    document = relationship("Document", back_populates="files")
 
     def __str__(self):
         return "aaaa"

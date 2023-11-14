@@ -1,6 +1,6 @@
 
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
-from sqlalchemy.orm import sessionmaker, relationship, Session
+from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -21,7 +21,7 @@ class Document(Base):
 
     def to_dict(self):
         return {
-             "document_id": self.document_id,
+             "documentId": self.document_id,
              "hash": self.hash,
              "size": self.size
          }

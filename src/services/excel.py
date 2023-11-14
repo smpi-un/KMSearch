@@ -16,48 +16,6 @@ import tempfile
 # TYPE_ERROR: Final = "e"
 # TYPE_FORMULA_CACHE_STRING: Final = "str"
 
-def extract_cell_data(cell):
-    if cell.data_type not in ["s", "n", "inlineStr", "str"] or cell.value is None or cell.value == "":
-        return None
-    return {
-        "address": cell.coordinate,
-        "row": cell.row,
-        "column": cell.column,
-        "value": cell.value,
-        # "formula": cell.formula if cell.data_type == 'f' else None
-    }
-
-def excel_to_json_string(file_path):
-        # drawings一覧を取得する
-        drawings = extract_drawing_data(file_path)
-        # Excelファイルを開く
-        workbook = openpyxl.load_workbook(file_path)
-
-        # セルのデータを格納するためのリスト
-        all_sheet_data = {}
-
-        # すべてのシートに対して処理を行う
-        for i, sheet_name in enumerate(list(workbook.sheetnames)):
-            sheet = workbook[sheet_name]
-            all_cell_data = []
-
-            # シート内のセルに対して処理を行う
-            for row in sheet.iter_rows():
-                for cell in row:
-                    cell_data = extract_cell_data(cell)
-                    if cell_data is not None:
-                      all_cell_data.append(cell_data)
-            sheet_data = {
-                "cells" : all_cell_data,
-                # "sharps" : list(drawings.values())[i],
-            }
-            all_sheet_data[sheet_name] = sheet_data
-
-        return all_sheet_data
-        # JSONデータを文字列として返す（エンコーダーを使用）
-        # json_data = json.dumps(all_sheet_data, ensure_ascii=False, indent=2, cls=DateTimeEncoder)
-        # return json_data
-
 
 def extract_drawing_data(zip_file_path: str):
     # 一時フォルダを作成

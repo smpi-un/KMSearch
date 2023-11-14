@@ -24,8 +24,8 @@ class SearchText(Base):
 
     def to_dict(self):
         return {
-             "search_text_id": self.search_text_id,
-             "extract_id": self.extract_id,
+             "searchTextId": self.search_text_id,
+             "extractId": self.extract_id,
              "text": self.text,
              "details": self.details,
          }

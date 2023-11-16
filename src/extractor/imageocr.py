@@ -1,8 +1,8 @@
 import os
 import tempfile
 from .extractor import *
-import services.ocrimage as ocrimage
-import services.multitosingleimages as multitosingleimages
+import utils.ocrimage as ocrimage
+import utils.multitosingleimages as multitosingleimages
 
 class ImageOcrExtractor(Extractor):
     method = 'imageOcr'
@@ -16,8 +16,8 @@ class ImageOcrExtractor(Extractor):
         images = multitosingleimages.save_pages_as_png(path, temp_dir)
 
         # 画像情報に対してOCRを実行
-        file_ocr_result, model_language, custom_model_path = ocrimage.ocr_on_images(
-            images[0:2], self.custom_model_path
+        file_ocr_result, model_language = ocrimage.ocr_on_images(
+            images, self.custom_model_path
         )
 
         # 一時フォルダ内の画像を削除
@@ -33,16 +33,15 @@ class ImageOcrExtractor(Extractor):
             for ocr_result in page_ocr_results:
                 details = {
                     "page": page,
+                    "pageCount" : len(file_ocr_result),
                     "boxes": [[int(x) for x in pos] for pos in ocr_result["boxes"]],
                     "confident": ocr_result["confident"],
                 }
                 search_text = SearchText(ocr_result["text"], details)
                 search_texts.append(search_text)
-                # print(ocr_json)
         extract_details = {
             'customModelPath': self.custom_model_path,
-            'model_language' : model_language,
-            'custom_model_path' : custom_model_path,
+            'modelLanguage' : model_language,
         }
         return ExtractResult(extract_details, search_texts)
 

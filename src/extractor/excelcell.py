@@ -22,7 +22,7 @@ class ExcelCellExtractor(Extractor):
             search_texts.append(search_text)
         return ExtractResult(extract_details, search_texts)
 
-def extract_cell_data(cell) -> dict:
+def extract_cell_data(cell) -> dict[str, any]:
     if cell.data_type not in ["s", "n", "inlineStr", "str"] or cell.value is None or cell.value == "":
         return None
     return {

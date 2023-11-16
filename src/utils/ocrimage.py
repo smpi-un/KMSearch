@@ -3,7 +3,7 @@ import shutil
 import easyocr
 import tempfile
 
-def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[str, any], str, str]:
+def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[str, any], str]:
     language = []
     
     if custom_model_path is None or custom_model_path.strip() == '':
@@ -23,7 +23,6 @@ def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[
             shutil.copy(image_path, temp_image_path)
             
             # 一時フォルダにコピーした画像からテキストをOCRで抽出
-            print(temp_image_path)
             result = reader.readtext(temp_image_path, output_format='dict')
             # {'boxes':item[0],'text':item[1],'confident':item[2]}
             ocr_results.append(result)
@@ -31,6 +30,6 @@ def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[
         # 一時フォルダを削除
         shutil.rmtree(temp_folder)
     
-    return (ocr_results, reader.model_lang, custom_model_path)
+    return (ocr_results, reader.model_lang)
 
 

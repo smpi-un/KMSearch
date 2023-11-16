@@ -58,7 +58,7 @@ def ocr_image(input_file_path: str, model_path: str):
 
         # 画像情報に対してOCRを実行
         ocr_result, model_language, custom_model_path = ocrimage.ocr_on_images(
-            images[0:2], model_path
+            images, model_path
         )
 
         # 一時フォルダ内の画像を削除

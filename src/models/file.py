@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import sessionmaker, relationship, Session
+from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -17,12 +17,10 @@ class File(Base):
 
     document = relationship("Document", back_populates="files")
 
-    def __str__(self):
-        return "aaaa"
     def to_dict(self):
         return {
-             "file_id": self.file_id,
-             "document_id": self.document_id,
+             "fileId": self.file_id,
+             "documentId": self.document_id,
              "path": self.path,
              "missing": self.missing,
          }

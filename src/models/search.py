@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import Column, String, ForeignKey, DateTime, JSON
+from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -32,10 +32,7 @@ class SearchText(Base):
 Base.metadata.create_all(engine)
 
 # データベースへのレコード追加関数
-def insert_search_text(extract_id: str, text: int, details: str) -> str:
-    # データベースセッションを作成
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def insert_search_text(session: Session, extract_id: str, text: int, details: str) -> str:
 
     uuid_value = str(uuid.uuid4())
     new_search_text = SearchText(
@@ -45,10 +42,6 @@ def insert_search_text(extract_id: str, text: int, details: str) -> str:
         details=details,
         )
     session.add(new_search_text)
-    session.commit()
-
-    # セッションをクローズ
-    session.close()
     return uuid_value
 
 # データベースからデータを取得する関数

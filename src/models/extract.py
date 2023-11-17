@@ -1,8 +1,8 @@
 from sqlalchemy import Column, String, JSON, ForeignKey, DateTime
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
-from database_engine import Base, engine
 from datetime import datetime
+from database_engine import Base
 
 # extractモデルクラスを定義
 class Extract(Base):
@@ -30,24 +30,14 @@ class Extract(Base):
 
 
 # データベースへのレコード追加関数
-def insert_extract_data(document_id: str, method: str, details: any) -> str:
-    # データベースセッションを作成
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def insert_extract_data(session: Session, document_id: str, method: str, details: any) -> str:
 
     uuid_value = str(uuid.uuid4())
     extract_data = Extract(extract_id=uuid_value, document_id=document_id, method=method, details=details)
     session.add(extract_data)
-    session.commit()
-
-    # セッションをクローズ
-    session.close()
     return uuid_value
 
 # データベースからデータを取得する関数
-def fetch_extract_data() -> Extract:
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def fetch_extract_data(session: Session) -> Extract:
     extract_data = session.query(Extract).all()
-    session.close()
     return extract_data

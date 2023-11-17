@@ -17,7 +17,7 @@ class PdfOcrExtractor(Extractor):
 
         # 画像情報に対してOCRを実行
         file_ocr_result, model_language = ocrimage.ocr_on_images(
-            images[0:2], self.custom_model_path
+            images, self.custom_model_path
         )
 
         # 一時フォルダ内の画像を削除

@@ -1,7 +1,7 @@
 import argparse
 import toml
 import services.explorefiles as explorefiles
-import services.searchfiles as searchfiles
+import services.searchfile as searchfile
 import services.updatedata as updatedata
 import services.showdocument as showdocument
 import services.searchcsv as searchcsv
@@ -22,7 +22,7 @@ def main():
 
     # 'search' サブコマンド
     search_parser = subparsers.add_parser("search", help="ファイルを検索")
-    search_parser.add_argument("keyword", type=str, nargs='*', help="検索キーワード")
+    search_parser.add_argument("keyword", type=str, help="検索キーワード")
     search_parser.add_argument("--extract_type", type=str, help="")
     search_parser.add_argument("--file_path_pattern", type=str, help="")
 
@@ -41,7 +41,7 @@ def main():
     elif args.subcommand == "update":
         updatedata.update(args.model_path)
     elif args.subcommand == "search":
-        searchfiles.search(args.keyword, args.extract_type, args.file_path_pattern)
+        searchfile.search(args.keyword, args.extract_type, args.file_path_pattern)
     elif args.subcommand == "showdocument":
         showdocument.show_document(args.path)
     elif args.subcommand == "searchcsv":

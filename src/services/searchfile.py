@@ -1,13 +1,32 @@
 from sqlalchemy.orm import joinedload
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
 from database_engine import engine
 import json
 from models import *
+from lark import Lark, Tree
+import utils.formulaparser
+
+def tree_to_cond(tree: Tree):
+    match tree.data:
+        case "and_expr":
+            expr1 = tree_to_cond(tree.children[0])
+            expr2 = tree_to_cond(tree.children[1])
+            return and_(expr1, expr2)
+        case "or_expr":
+            expr1 = tree_to_cond(tree.children[0])
+            expr2 = tree_to_cond(tree.children[1])
+            return or_(expr1, expr2)
+        case "word":
+            return SearchText.text.contains(tree.children[0].value)
+        case "not_expr":
+            return ~SearchText.text.contains(tree.children[0].value)
+        case _:
+            raise tree.data
+
 
 def search(keyword: str, extract_method: str, file_path_pattern: str):
-    print(extract_method)
   
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -19,8 +38,7 @@ def search(keyword: str, extract_method: str, file_path_pattern: str):
         .join(Extract, Document.document_id == Extract.document_id)
         .join(SearchText, Extract.extract_id == SearchText.extract_id)
     )
-    print(file_path_pattern)
-    query2 = query1.filter(SearchText.text.like(f"%{keyword}%")) if keyword is not None else query1
+    query2 = query1.filter(tree_to_cond(utils.formulaparser.parse_formula(keyword))) if keyword is not None else query1
     query3 = query2.filter(Extract.method == extract_method) if extract_method is not None else query2
     query4 = query3.filter(File.path.like(f"%{file_path_pattern}%")) if file_path_pattern is not None else query3
     result = query4.all()
@@ -28,7 +46,7 @@ def search(keyword: str, extract_method: str, file_path_pattern: str):
     # データを整理して階層構造のJSON形式に変換
     document_dict = {}
     print(len(result))
-    for document, file, extract, search_text  in result:
+    for document, file, extract, search_text, k  in result:
   
       if document.document_id not in document_dict:
           document_dict[document.document_id] = document.to_dict()

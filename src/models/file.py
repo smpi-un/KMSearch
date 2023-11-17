@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -26,18 +26,11 @@ class File(Base):
          }
 
 # データベースへのレコード追加関数
-def insert_file(document_id: str, path: str, missing: bool) -> str:
-    # データベースセッションを作成
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def insert_file(session: Session, document_id: str, path: str, missing: bool) -> str:
 
     uuid_value = str(uuid.uuid4())
     file_data = File(file_id=uuid_value, document_id=document_id, path=path, missing=missing)
     session.add(file_data)
-    session.commit()
-
-    # セッションをクローズ
-    session.close()
 
     return uuid_value
 
@@ -50,7 +43,7 @@ def fetch_file() -> File:
     return file
 
 
-def get_file_id_by_hash(path: str) -> str:
+def get_file_id_by_hash(session: Session, path: str) -> str:
     """ 
     ファイルパスを引数にとり、保存済みのFileテーブルから同じhashが存在する場合そのfile_idを返す関数.
 
@@ -61,36 +54,14 @@ def get_file_id_by_hash(path: str) -> str:
     str: ファイルパスが存在する場合、そのfile_id. 存在しなければ None
     """
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
     file = session.query(File).filter(File.path == path).first()
-    # セッションをクローズ
-    session.close()
     return file.file_id if file else None
 
-def update_document_id(file_id, new_document_id):
-    # SQLAlchemy sessionを作成
-    Session = sessionmaker(bind=engine)
+def update_document_id(session: Session, file_id, new_document_id):
+
+    # 指定したfile_idのレコードを見つける
+    file = session.query(File).get(file_id)
+
+    # document_idを新しいものに更新する
+    file.document_id = new_document_id
     
-    session = Session()
-
-    try:
-        # 指定したfile_idのレコードを見つける
-        file = session.query(File).get(file_id)
-
-        # document_idを新しいものに更新する
-        file.document_id = new_document_id
-        
-        # 変更をコミットする
-        session.commit()
-        print("Updated the document_id successfully.")
-        
-    except Exception as e:
-        # エラーが発生した場合はロールバックする
-        session.rollback()
-        print("Failed to update the document_id.")
-        print(str(e))
-        
-    finally:
-        # sessionをクローズする
-        session.close()

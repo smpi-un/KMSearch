@@ -1,6 +1,6 @@
 
 from sqlalchemy import Column, String, Integer, DateTime
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
 from database_engine import Base, engine
 from datetime import datetime
@@ -31,18 +31,11 @@ class Document(Base):
 
 
 # データベースへのレコード追加関数
-def insert_document(hash: str, size: int) -> str:
-    # データベースセッションを作成
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def insert_document(session: Session, hash: str, size: int) -> str:
 
     uuid_value = str(uuid.uuid4())
     document = Document(document_id=uuid_value, hash=hash, size=size)
     session.add(document)
-    session.commit()
-
-    # セッションをクローズ
-    session.close()
 
     return uuid_value
 
@@ -55,7 +48,7 @@ def fetch_document() -> Document:
     return document
 
 
-def get_document_id_by_hash(hash_value: str) -> str:
+def get_document_id_by_hash(session: Session, hash_value: str) -> str:
     """ 
     ハッシュ値を引数にとり、保存済みのDocumentテーブルから同じhashが存在する場合そのdocument_idを返す関数.
 
@@ -66,10 +59,5 @@ def get_document_id_by_hash(hash_value: str) -> str:
     Returns:
     str: ハッシュ値が存在する場合、そのdocument_id. 存在しなければ None
     """
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
     document = session.query(Document).filter(Document.hash == hash_value).first()
-    # セッションをクローズ
-    session.close()
     return document.document_id if document else None

@@ -29,16 +29,32 @@ class ImageOcrExtractor(Extractor):
         os.rmdir(temp_dir)
 
         search_texts = []
+        file_texts = []
         for page, page_ocr_results in enumerate(file_ocr_result):
+            page_texts = []
             for ocr_result in page_ocr_results:
-                details = {
+                page_details = {
                     "page": page,
-                    "pageCount" : len(file_ocr_result),
+                    "pageCount": len(file_ocr_result),
                     "boxes": [[int(x) for x in pos] for pos in ocr_result["boxes"]],
                     "confident": ocr_result["confident"],
                 }
-                search_text = SearchText(ocr_result["text"], details)
-                search_texts.append(search_text)
+                word_search_text = SearchText(ocr_result["text"], SearchTextUnit.word, page_details)
+                search_texts.append(word_search_text)
+                page_texts.append(ocr_result["text"])
+                file_texts.append(ocr_result["text"])
+
+            page_details = {
+                "page": page,
+                "pageCount": len(file_ocr_result),
+            }
+            page_search_text = SearchText('\n'.join(page_texts), SearchTextUnit.page, page_details)
+            search_texts.append(page_search_text)
+        file_details = {
+            "pageCount": len(file_ocr_result),
+        }
+        file_search_text = SearchText('\n'.join(file_texts), SearchTextUnit.file, file_details)
+        search_texts.append(file_search_text)
         extract_details = {
             'customModelPath': self.custom_model_path,
             'modelLanguage' : model_language,

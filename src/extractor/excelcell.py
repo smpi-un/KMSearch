@@ -9,17 +9,37 @@ class ExcelCellExtractor(Extractor):
         search_texts = []
         extract_details = {
         }
+        file_texts = []
+
         all_sheet_data = extract_excel_cell(path)
-        for sheet_name, sheet in all_sheet_data.items():
-          for cell in sheet:
-            details = {
-              "sheet_name": sheet_name,
-              "address": cell["address"],
-              "row": cell["row"],
-              "column": cell["column"],
+        for i, (sheet_name, sheet) in enumerate(all_sheet_data.items()):
+            page_texts = []
+            for cell in sheet:
+                word_details = {
+                    "sheet_name": sheet_name,
+                    "address": cell["address"],
+                    "row": cell["row"],
+                    "column": cell["column"],
+                    "sheetCount": len(all_sheet_data.items()),
+                    "sheetNumber": i,
+                }
+                word_text = str(cell["value"])
+                word_search_text = SearchText(word_text, SearchTextUnit.word, word_details)
+                search_texts.append(word_search_text)
+                page_texts.append(word_text)
+                file_texts.append(word_text)
+            page_details = {
+                "sheetName": sheet_name,
+                "sheetCount": len(all_sheet_data.items()),
             }
-            search_text = SearchText(cell["value"], details)
-            search_texts.append(search_text)
+            page_search_text = SearchText('\n'.join(page_texts), SearchTextUnit.page, page_details)
+            search_texts.append(page_search_text)
+        file_details = {
+            "sheetCount": len(all_sheet_data.items()),
+        }
+        file_search_text = SearchText('\n'.join(file_texts), SearchTextUnit.file, file_details)
+        search_texts.append(file_search_text)
+        
         return ExtractResult(extract_details, search_texts)
 
 def extract_cell_data(cell) -> dict[str, any]:

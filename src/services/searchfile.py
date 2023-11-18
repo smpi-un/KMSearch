@@ -38,15 +38,17 @@ def search(keyword: str, extract_method: str, file_path_pattern: str):
         .join(Extract, Document.document_id == Extract.document_id)
         .join(SearchText, Extract.extract_id == SearchText.extract_id)
     )
+    unit = "page"
     query2 = query1.filter(tree_to_cond(utils.formulaparser.parse_formula(keyword))) if keyword is not None else query1
     query3 = query2.filter(Extract.method == extract_method) if extract_method is not None else query2
     query4 = query3.filter(File.path.like(f"%{file_path_pattern}%")) if file_path_pattern is not None else query3
-    result = query4.all()
+    query5 = query4.filter(SearchText.unit == unit) if unit is not None else query4
+    result = query5.all()
 
     # データを整理して階層構造のJSON形式に変換
     document_dict = {}
     print(len(result))
-    for document, file, extract, search_text, k  in result:
+    for document, file, extract, search_text  in result:
   
       if document.document_id not in document_dict:
           document_dict[document.document_id] = document.to_dict()

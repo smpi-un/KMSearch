@@ -1,7 +1,9 @@
+from models.search import SearchTextUnit
 
 class SearchText:
-    def __init__(self, text: str, details: any) -> None:
+    def __init__(self, text: str, unit: SearchTextUnit, details: any) -> None:
         self.text = text
+        self.unit = unit
         self.details = details
 
 

@@ -63,7 +63,7 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
                 extract_result = extractor.extract(input_file_path)
                 # 抽出失敗した場合はスキップ
                 if extract_result is None:
-                    print(f"extract fault. path: {input_file_path}, method: {extractor.method}")
+                    # print(f"extract fault. path: {input_file_path}, method: {extractor.method}")
                     continue
 
                 extract_id = extract.insert_extract_data(
@@ -72,12 +72,11 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
 
                 for search_text in extract_result.search_texts:
                     # 短いものはリターン
-                    if len(search_text.text) <= 0:
+                    if len(search_text.text.strip()) <= 0:
                         continue
                     search_text_id = search.insert_search_text(
-                        session, extract_id, search_text.text, search_text.details
+                        session, extract_id, search_text.text, search_text.unit, search_text.details
                     )
-                    print(f'- Add text: {search_text.text}')
 
         else:
             print(f"tourokuzumi: {input_file_path}")
@@ -88,6 +87,8 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
         # セッションをクローズ
         session.close()
     except Exception as e:
-        print(f"{str(e)} path: {input_file_path}")
+        # print(f"{str(e)} path: {input_file_path}")
+        print(f"path: {input_file_path}")
         session.rollback()
         session.close()
+        raise e

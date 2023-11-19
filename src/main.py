@@ -23,16 +23,12 @@ def main():
     # 'search' サブコマンド
     search_parser = subparsers.add_parser("search", help="ファイルを検索")
     search_parser.add_argument("keyword", type=str, help="検索キーワード")
-    search_parser.add_argument("--extract_type", type=str, help="")
-    search_parser.add_argument("--file_path_pattern", type=str, help="")
+    search_parser.add_argument("--extract_type", type=str, help="抽出タイプ")
+    search_parser.add_argument("--file_path_pattern", type=str, help="ファイルパスのパターン")
 
     # 'showdocument' サブコマンド
-    showdocument_parser = subparsers.add_parser("showdocument", help="ファイルを検索")
-    showdocument_parser.add_argument("path", type=str, help="検索キーワード")
-
-    # 'searchcsv' サブコマンド
-    searchcsv_parser = subparsers.add_parser("searchcsv", help="ファイルを検索")
-    searchcsv_parser.add_argument("expression", type=str, help="検索キーワード")
+    showdocument_parser = subparsers.add_parser("showdocument", help="パスを指定してドキュメント情報を表示")
+    showdocument_parser.add_argument("path", type=str, help="表示対象ドキュメント")
 
     args = parser.parse_args()
 
@@ -44,8 +40,6 @@ def main():
         searchfile.search(args.keyword, args.extract_type, args.file_path_pattern)
     elif args.subcommand == "showdocument":
         showdocument.show_document(args.path)
-    elif args.subcommand == "searchcsv":
-        searchcsv.search(args.expression)
     else:
         parser.print_help()
 

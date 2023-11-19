@@ -1,12 +1,12 @@
 import argparse
-import toml
 import services.explorefiles as explorefiles
 import services.searchfile as searchfile
 import services.updatedata as updatedata
 import services.showdocument as showdocument
 import services.searchcsv as searchcsv
+from utils.config import Config, load_config
 
-def main():
+def main(config: Config):
     parser = argparse.ArgumentParser(description="フォルダの探索とファイル検索ツール")
 
     subparsers = parser.add_subparsers(title="サブコマンド", dest="subcommand")
@@ -43,19 +43,9 @@ def main():
     else:
         parser.print_help()
 
-def load_config():
-    # TOML ファイルを読み込む
-    config = toml.load("config.toml")
-
-    # 設定内容を表示
-    print("Database Information:")
-    print(f"Server: {config['database']['server']}")
-    print(f"Ports: {config['database']['ports']}")
-    print(f"Max Connections: {config['database']['connection_max']}")
-    print(f"Enabled: {config['database']['enabled']}")
 
 
 
 if __name__ == "__main__":
-    load_config()
-    main()
+    config = load_config()
+    main(config)

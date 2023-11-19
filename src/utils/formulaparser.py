@@ -3,7 +3,7 @@ from lark import Lark, Tree
 def parse_formula(text: str):
 
     # 検索条件パーサーの定義
-    grammar = '''
+    grammar = r'''
     ?start: expr1
     // expression
     ?expr1: expr2
@@ -22,9 +22,10 @@ def parse_formula(text: str):
         | priority
     ?priority: "(" expr1 ")"
 
-    word: WORD
-    WORD: /[^\W\d_]+/
-    // %import common.WORD   // imports from terminal library
+    word: WORD | SIGNED_NUMBER| w2
+    ?w2: /[^\W\d_]+/
+    %import common.WORD   // imports from terminal library
+    %import common.SIGNED_NUMBER   // imports from terminal library
     %ignore " "           // Disregard spaces in text
     '''
 

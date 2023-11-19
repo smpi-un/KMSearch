@@ -2,14 +2,19 @@ import os
 import shutil
 import easyocr
 import tempfile
+import locale
 
-def ocr_on_images(image_paths: list[str], custom_model_path = '') -> tuple[dict[str, any], str]:
-    language = []
+def get_system_language():
+    system_lang = locale.getdefaultlocale()[0].split("_")[0]
+    return system_lang
+
+def ocr_on_images(image_paths: list[str], custom_model_path = '', languages = []) -> tuple[dict[str, any], str]:
+    system_language = [get_system_language()]
     
     if custom_model_path is None or custom_model_path.strip() == '':
-        reader = easyocr.Reader(['ja', 'en'] + language)
+        reader = easyocr.Reader(languages + system_language)
     else:
-        reader = easyocr.Reader(['ja', 'en'] + language, model_storage_directory=custom_model_path.strip())
+        reader = easyocr.Reader(languages + system_language, model_storage_directory=custom_model_path.strip())
 
     ocr_results = []
     

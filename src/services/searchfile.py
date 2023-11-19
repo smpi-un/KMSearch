@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 from database_engine import engine
 import json
 from models import *
-from lark import Lark, Tree
+from lark import Tree
 import utils.formulaparser
 
 def tree_to_cond(tree: Tree):
@@ -21,7 +21,7 @@ def tree_to_cond(tree: Tree):
         case "word":
             return SearchText.text.contains(tree.children[0].value)
         case "not_expr":
-            return ~SearchText.text.contains(tree.children[0].value)
+            return ~tree_to_cond(tree.children[0])
         case _:
             raise tree.data
 

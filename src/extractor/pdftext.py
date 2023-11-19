@@ -17,15 +17,18 @@ class PdfTextExtractor(Extractor):
                 page = pdf_document[page_num]
                 text = page.get_text("text")
                 if text != '':
-                    details = {
+                    word_details = {
                         'page': page_num,
                         'pageCount': pdf_document.page_count,
                     }
-                    search_texts.append(SearchText(text, SearchTextUnit.word, details))
-                    search_texts.append(SearchText(text, SearchTextUnit.page, details))
+                    search_texts.append(SearchText(text, SearchTextUnit.word, word_details))
+                    search_texts.append(SearchText(text, SearchTextUnit.page, word_details))
                     file_texts.append(text)
                     
-            search_texts.append(SearchText('\n'.join(file_texts), SearchTextUnit.file, details))
+            file_details = {
+                'pageCount': pdf_document.page_count,
+            }
+            search_texts.append(SearchText('\n'.join(file_texts), SearchTextUnit.file, file_details))
         return ExtractResult(extract_details, search_texts)
 
 

@@ -12,9 +12,9 @@ def ocr_on_images(image_paths: list[str], custom_model_path = '', languages = []
     system_language = [get_system_language()]
     
     if custom_model_path is None or custom_model_path.strip() == '':
-        reader = easyocr.Reader(languages + system_language)
+        reader = easyocr.Reader(languages + system_language, gpu=True)
     else:
-        reader = easyocr.Reader(languages + system_language, model_storage_directory=custom_model_path.strip())
+        reader = easyocr.Reader(languages + system_language, gpu=True, model_storage_directory=custom_model_path.strip())
 
     ocr_results = []
     

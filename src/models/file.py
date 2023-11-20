@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
-from database_engine import Base, engine
+from database_engine import Base, get_engine
 from datetime import datetime
 
 # Fileモデルクラスを定義
@@ -36,7 +36,7 @@ def insert_file(session: Session, document_id: str, path: str, missing: bool) ->
 
 # データベースからデータを取得する関数
 def fetch_file() -> File:
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=get_engine())
     session = Session()
     file = session.query(File).all()
     session.close()

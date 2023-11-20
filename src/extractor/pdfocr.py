@@ -6,8 +6,9 @@ import utils.pdftoimage as pdftoimage
 
 class PdfOcrExtractor(Extractor):
     method = 'pdfOcr'
-    def __init__(self, custom_model_path = ''):
+    def __init__(self, custom_model_path = '', languages: list[str] = []):
         self.custom_model_path = custom_model_path
+        self.languages = languages
     def extract(self, path: str) -> ExtractResult:
         # 一時フォルダを作成
         temp_dir = tempfile.mkdtemp()
@@ -17,7 +18,7 @@ class PdfOcrExtractor(Extractor):
 
         # 画像情報に対してOCRを実行
         file_ocr_result, model_language = ocrimage.ocr_on_images(
-            images, self.custom_model_path
+            images, self.custom_model_path, self.languages
         )
 
         # 一時フォルダ内の画像を削除

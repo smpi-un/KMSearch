@@ -2,7 +2,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-from database_engine import engine
+from database_engine import get_engine
 import json
 from models import *
 from lark import Tree
@@ -27,8 +27,9 @@ def tree_to_cond(tree: Tree):
 
 
 def search(keyword: str, extract_method: str, file_path_pattern: str):
+    print(get_engine())
   
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=get_engine())
     session = Session()
   
     # OcrTextとOcrを結合してデータを取得し、さらにPageを結合

@@ -1,12 +1,12 @@
 import argparse
+from database_engine import init_database, get_engine, init_engine
 import services.explorefiles as explorefiles
 import services.searchfile as searchfile
 import services.updatedata as updatedata
 import services.showdocument as showdocument
-import services.searchcsv as searchcsv
-from utils.config import Config, load_config
+from utils.config import load_config
 
-def main(config: Config):
+def main(config: dict):
     parser = argparse.ArgumentParser(description="フォルダの探索とファイル検索ツール")
 
     subparsers = parser.add_subparsers(title="サブコマンド", dest="subcommand")
@@ -33,7 +33,7 @@ def main(config: Config):
     args = parser.parse_args()
 
     if args.subcommand == "explore":
-        explorefiles.explore(args.dir_path, args.model_path)
+        explorefiles.explore(args.dir_path, args.model_path, config["ocr"]["languages"])
     elif args.subcommand == "update":
         updatedata.update(args.model_path)
     elif args.subcommand == "search":
@@ -50,5 +50,9 @@ print(torch.cuda.is_available())
 
 
 if __name__ == "__main__":
-    config = load_config()
+    config = load_config("./config.toml")
+    print(config)  # DBのURLが出力されるはず
+    init_engine(config["database"]["url"])
+    assert get_engine() is not None, "Engine is not initialized."
+    init_database()
     main(config)

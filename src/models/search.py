@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, ForeignKey, DateTime, JSON, Enum
 from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
-from database_engine import Base, engine
+from database_engine import Base, get_engine
 from datetime import datetime
 import enum
 
@@ -37,7 +37,6 @@ class SearchText(Base):
              "text": self.text,
              "details": self.details,
          }
-Base.metadata.create_all(engine)
 
 # データベースへのレコード追加関数
 def insert_search_text(session: Session, extract_id: str, text: int, search_text_unit: SearchTextUnit, details: str) -> str:
@@ -55,7 +54,7 @@ def insert_search_text(session: Session, extract_id: str, text: int, search_text
 
 # データベースからデータを取得する関数
 def fetch_page_data() -> SearchText:
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=get_engine())
     session = Session()
     page_data = session.query(SearchText).all()
     session.close()

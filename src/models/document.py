@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy.orm import sessionmaker, relationship, Session
 import uuid
-from database_engine import Base, engine
+from database_engine import Base, get_engine
 from datetime import datetime
 
 
@@ -41,7 +41,7 @@ def insert_document(session: Session, hash: str, size: int) -> str:
 
 # データベースからデータを取得する関数
 def fetch_document() -> Document:
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=get_engine())
     session = Session()
     document = session.query(Document).all()
     session.close()

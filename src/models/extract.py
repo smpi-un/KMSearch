@@ -23,6 +23,7 @@ class Extract(Base):
             "extractId": self.extract_id,
             "documentId": self.document_id,
             "method": self.method,
+            "details": self.details,
         }
 
     def __repr__(self):

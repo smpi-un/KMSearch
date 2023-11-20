@@ -3,7 +3,7 @@ import utils.filehash as filehash
 from extractor import *
 from models import *
 from sqlalchemy.orm import sessionmaker, relationship
-from database_engine import engine
+from database_engine import get_engine
 
 pdf_exts = [".pdf"]
 image_exts = [
@@ -19,18 +19,18 @@ image_exts = [
 excel_exts = [".xlsx", ".xlsm"]
 
 
-def explore(base_dirs: list[str], model_path: str):
+def explore(base_dirs: list[str], model_path: str, languages: list[str]):
     for base_dir in base_dirs:
         for root, _, files in os.walk(base_dir):
             for file in files:
                 ext = os.path.splitext(file)[1].lower()
                 input_file_path = os.path.join(root, file)
                 if ext in image_exts:
-                    ex = ImageOcrExtractor(model_path)
+                    ex = ImageOcrExtractor(model_path, languages)
                     extract_and_insert([ex], input_file_path)
                 if ext in pdf_exts:
                     ex1 = pdftext.PdfTextExtractor()
-                    ex2 = pdfocr.PdfOcrExtractor(model_path)
+                    ex2 = pdfocr.PdfOcrExtractor(model_path, languages)
                     extract_and_insert([ex1, ex2], input_file_path)
                 if ext in excel_exts:
                     ex1 = ExcelCellExtractor()
@@ -40,7 +40,7 @@ def explore(base_dirs: list[str], model_path: str):
 def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str):
     hash = filehash.calculate_file_hash(input_file_path)
     # ファイル単位でデータベースセッションを作成
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=get_engine())
     session = Session()
     try:
         reg_document_id = document.get_document_id_by_hash(session, hash)

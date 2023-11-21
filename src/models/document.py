@@ -48,7 +48,7 @@ def fetch_document() -> Document:
     return document
 
 
-def get_document_id_by_hash(session: Session, hash_value: str) -> str:
+def get_document_by_hash(session: Session, hash_value: str) -> Document:
     """ 
     ハッシュ値を引数にとり、保存済みのDocumentテーブルから同じhashが存在する場合そのdocument_idを返す関数.
 
@@ -60,4 +60,4 @@ def get_document_id_by_hash(session: Session, hash_value: str) -> str:
     str: ハッシュ値が存在する場合、そのdocument_id. 存在しなければ None
     """
     document = session.query(Document).filter(Document.hash == hash_value).first()
-    return document.document_id if document else None
+    return document

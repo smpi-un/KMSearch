@@ -13,8 +13,15 @@ class ExcelSharpExtractor(Extractor):
         extract_details = {
         }
         search_texts = extract_drawing_data(path)
+        if search_texts is None:
+            return None
         return ExtractResult(extract_details, search_texts)
 
+ns = {
+    'xdr': 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
+    'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+    'xxx': 'http://schemas.openxmlformats.org/package/2006/relationships',
+}
 def extract_drawing_data(zip_file_path: str) -> list[SearchText]:
     # 一時フォルダを作成
     temp_folder_path = tempfile.mkdtemp()
@@ -23,11 +30,14 @@ def extract_drawing_data(zip_file_path: str) -> list[SearchText]:
         os.makedirs(temp_folder_path)
 
     # Zipファイルを解凍
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(temp_folder_path)
+    try:
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_folder_path)
+    except Exception as e:
+        print(e)
+        return None
 
     # xl/drawings フォルダのパス
-    # drawing_data = get_drawings_data(drawings_folder_path)
     sheet_list = get_sheet_list(temp_folder_path)
     worksheet_dict = rel_worksheet_file(temp_folder_path)
     drawing_data_list = []
@@ -67,7 +77,6 @@ def extract_drawing_data(zip_file_path: str) -> list[SearchText]:
     search_texts.append(file_search_text)
     return search_texts
 
-
 def get_sheet_list(workbook_dir: str) -> list[dict[str, str]]:
     workbook_path = os.path.join(workbook_dir, 'xl/workbook.xml')
     # xl/drawings フォルダが存在する場合
@@ -75,7 +84,7 @@ def get_sheet_list(workbook_dir: str) -> list[dict[str, str]]:
         return None
 
     # XML 文字列
-    with open(workbook_path, 'r') as fp:
+    with open(workbook_path, 'r', encoding='utf-8') as fp:
         xml = fp.read()
 
     # XML のパース
@@ -83,7 +92,7 @@ def get_sheet_list(workbook_dir: str) -> list[dict[str, str]]:
 
     # シートのIDと名前の辞書作成
     sheet_list = []
-    for sheet in root.iter('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet'):
+    for sheet in root.findall('a:sheet', ns):
         s = {
             "sheetId": sheet.attrib['sheetId'],
             "name": sheet.attrib['name'],
@@ -99,7 +108,7 @@ def rel_worksheet_file(workbook_dir: str) -> dict[str, str]:
     # RelationshipのIDとTargetの辞書を作成
     # RelationshipのIDとTargetの辞書を作成
     relationship_dict = {}
-    for relationship in root.iter('{http://schemas.openxmlformats.org/package/2006/relationships}Relationship'):
+    for relationship in root.findall('xxx:Relationship'):
         relationship_dict[relationship.attrib['Id']] = relationship.attrib['Target']
     return relationship_dict
 
@@ -110,27 +119,21 @@ def get_drawing_id(workbook_dir: str, sheet_path: str):
     root = tree.getroot()
 
     # Drawingのidを取得
-    tag = root.find('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}drawing')
+    tag = root.find('a:drawing', ns)
     if tag is None:
         return None
     drawing_id = tag.attrib['{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id']
     return drawing_id
-
-
-
 
 def get_drawingfile_from_sheet(workbook_dir:str, sheet_id:str):
     rels_path = os.path.join(workbook_dir, 'xl/worksheets/_rels', os.path.basename(sheet_id) + '.rels')
     root = ET.parse(rels_path)
     # RelationshipのIDとTargetの辞書を作成
     relationship_dict = {}
-    for relationship in root.iter('{http://schemas.openxmlformats.org/package/2006/relationships}Relationship'):
+    for relationship in root.findall('xxx:Relationship', ns):
         relationship_dict[relationship.attrib['Id']] = relationship.attrib['Target']
 
     return relationship_dict
-
-
-
 
 def get_drawings_data(workbook_dir: str, drawing_path: str) -> dict[str, list[str]]:
     # drawingデータを格納する辞書
@@ -143,19 +146,19 @@ def get_drawings_data(workbook_dir: str, drawing_path: str) -> dict[str, list[st
     # ここでXMLデータを必要な形に変換するか処理を追加
     elem_data = []
     # 名前空間の定義
-    ns = {
-        'xdr': 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
-        'a': 'http://schemas.openxmlformats.org/drawingml/2006/main'
-    }
     # sp の名前とテキストを抽出
     for sp in root.findall('.//xdr:sp', ns):
-        name = sp.find('./xdr:nvSpPr/xdr:cNvPr', ns).attrib['name']
-        text = sp.find('.//a:t', ns).text
+        name_findres = sp.find('./xdr:nvSpPr/xdr:cNvPr', ns)
+        if name_findres is None:
+            continue
+        name = name_findres.attrib['name']
+        text_findres = sp.find('.//a:t', ns)
+        if text_findres is None:
+            continue
+        text = text_findres.text
 
         elem_data.append({'name': name, 'text': text})
     return elem_data
-
-
 
 def get_drawings_data__(drawings_folder_path: str) -> dict[str, list[str]]:
     # drawingデータを格納する辞書
@@ -174,7 +177,7 @@ def get_drawings_data__(drawings_folder_path: str) -> dict[str, list[str]]:
                     root = ET.fromstring(xml_data)
                     # ここでXMLデータを必要な形に変換するか処理を追加
                     elem_data = []
-                    for elem in root.findall(".//{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}sp"):
+                    for elem in root.findall("xdr:sp", ns):
                         # すべてのテキストを抽出
                         all_text_elements = [element.text for element in elem.iter()]
 

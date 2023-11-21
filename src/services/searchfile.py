@@ -7,6 +7,7 @@ import json
 from models import *
 from lark import Tree
 import utils.formulaparser
+import sys
 
 def tree_to_cond(tree: Tree):
     match tree.data:
@@ -25,9 +26,7 @@ def tree_to_cond(tree: Tree):
         case _:
             raise tree.data
 
-
-def search(keyword: str, extract_method: str, file_path_pattern: str):
-    print(get_engine())
+def search(keyword: str, extract_method: str, file_path_pattern: str, out_path: str):
   
     Session = sessionmaker(bind=get_engine())
     session = Session()
@@ -48,7 +47,6 @@ def search(keyword: str, extract_method: str, file_path_pattern: str):
 
     # データを整理して階層構造のJSON形式に変換
     document_dict = {}
-    print(len(result))
     for document, file, extract, search_text  in result:
   
       if document.document_id not in document_dict:
@@ -69,18 +67,12 @@ def search(keyword: str, extract_method: str, file_path_pattern: str):
       if search_text.search_text_id not in search_text_dict:
           search_text_dict[search_text.search_text_id] = search_text.to_dict()
   
-      
-      # if page.page_id not in data:
-      #     data[page.page_id] = {
-      #         "page_id": page.page_id,
-      #         "document_id": page.document_id,
-      #         "page_number": page.page_number
-      #     }
-  
-  
-  
-  
     # JSON形式に変換して出力
     json_data = json.dumps(document_dict, indent=2, ensure_ascii=False)
-  
-    print(json_data)
+    
+    # 結果を、出力先ファイルパスがある場合はファイルへ、ない場合は標準出力へ出力。
+    if out_path is None or out_path == '':
+        print(json_data, file=sys.stdout)
+    else:
+        with open(out_path, 'w', encoding='utf-8') as fp:
+            fp.write(json_data)

@@ -3,10 +3,41 @@
 url = "sqlite:///kmsearch.sqlite"
 
 [explore]
+[explore.pdf]
+extensions = [".pdf"]
+[explore.pdf.ocr]
+enabled = true
+minSize = 1_000
+maxSize = 1_000_000
 
+[explore.pdf.text]
+enabled = true
+minSize = 1_000
+maxSize = 1_000_000
 
+[explore.image]
+extensions = [
+    ".avif", ".webp", ".tif", ".tiff",
+    ".jpg", ".jpeg", ".bmp", ".png",
+]
+[explore.image.ocr]
+enabled = false
+minSize = 1_000
+maxSize = 1_000_000
+[explore.excel]
+extensions = [ ".xlsx", ".xlsm", ]
+
+[explore.excel.cell]
+enabled = true
+minSize = 1_000
+maxSize = 1_000_000
+
+[explore.excel.sharp]
+enabled = true
+minSize = 1_000
+maxSize = 1_000_000
 
 [ocr]
 languages = ["en"]
 systemLanguage = true
-
+model_path = ""

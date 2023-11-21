@@ -13,6 +13,7 @@ class ExtractResult:
         self.search_texts = search_texts
 
 class Extractor:
-    method = ''
+
+    method = None
     def extract(self, path: str) -> ExtractResult | None:
         pass

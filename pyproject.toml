@@ -8,16 +8,12 @@ authors = [
 dependencies = [
     "sqlalchemy>=2.0.22",
     "pandas>=2.0.3",
-    "ipykernel>=6.25.2",
     "easyocr>=1.7.1",
     "PyMuPDF>=1.23.5",
     "pillow>=10.1.0",
     "openpyxl>=3.1.2",
     "toml>=0.10.2",
     "lark>=1.1.8",
-    "torch>=2.1.1",
-    "torchvision>=0.16.1",
-    "torchaudio>=2.1.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -30,11 +26,11 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = []
 
-[[tool.rye.sources]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu118"
-type = "index"
-
+# [[tool.rye.sources]]
+# name = "torch"
+# url = "https://download.pytorch.org/whl/cu118"
+# type = "index"
+# 
 
 [tool.hatch.metadata]
 allow-direct-references = true

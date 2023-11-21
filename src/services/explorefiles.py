@@ -5,87 +5,122 @@ from models import *
 from sqlalchemy.orm import sessionmaker, relationship
 from database_engine import get_engine
 
-pdf_exts = [".pdf"]
-image_exts = [
-    ".avif",
-    ".webp",
-    ".tif",
-    ".tiff",
-    ".jpg",
-    ".jpeg",
-    ".bmp",
-    ".png",
-]
-excel_exts = [".xlsx", ".xlsm"]
 
-
-def explore(base_dirs: list[str], model_path: str, languages: list[str]):
+def explore(base_dirs: list[str], explore_conf: dict, ocr_conf: dict):
     for base_dir in base_dirs:
         for root, _, files in os.walk(base_dir):
             for file in files:
-                ext = os.path.splitext(file)[1].lower()
                 input_file_path = os.path.join(root, file)
-                if ext in image_exts:
-                    ex = ImageOcrExtractor(model_path, languages)
-                    extract_and_insert([ex], input_file_path)
-                if ext in pdf_exts:
-                    ex1 = pdftext.PdfTextExtractor()
-                    ex2 = pdfocr.PdfOcrExtractor(model_path, languages)
-                    extract_and_insert([ex1, ex2], input_file_path)
-                if ext in excel_exts:
-                    ex1 = ExcelCellExtractor()
-                    ex2 = ExcelSharpExtractor()
-                    extract_and_insert([ex1, ex2], input_file_path)
+                extractors = choose_extractors(input_file_path, explore_conf, ocr_conf)
+                if extractors is None or extractors == []:
+                    continue
+                extract_and_insert(extractors, input_file_path)
+
+def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) -> list[Extractor]:
+    ext = os.path.splitext(input_file_path)[1].lower()
+    try:
+        filesize = os.path.getsize(input_file_path)
+    except FileNotFoundError as e:
+        print(e)
+        return None
+    extractors = []
+    # 拡張子で場合分けしてExtractorを生成する。
+    if ext in explore_conf['image']['extensions']:
+        if explore_conf['image']['ocr']['enabled'] and \
+           explore_conf['image']['ocr']['minSize'] <= filesize and \
+           explore_conf['image']['ocr']['maxSize'] >= filesize:
+            extractors.append(ImageOcrExtractor(ocr_conf["model_path"], ocr_conf['languages']))
+    if ext in explore_conf['pdf']['extensions']:
+        if explore_conf['pdf']['text']['enabled'] and \
+           explore_conf['pdf']['text']['minSize'] <= filesize and \
+           explore_conf['pdf']['text']['maxSize'] >= filesize:
+            extractors.append(PdfTextExtractor())
+        if explore_conf['pdf']['ocr']['enabled'] and \
+           explore_conf['pdf']['ocr']['minSize'] <= filesize and \
+           explore_conf['pdf']['ocr']['maxSize'] >= filesize:
+            extractors.append(PdfOcrExtractor(ocr_conf["model_path"], ocr_conf['languages']))
+    if ext in explore_conf['excel']['extensions']:
+        if explore_conf['excel']['cell']['enabled'] and \
+           explore_conf['excel']['cell']['minSize'] <= filesize and \
+           explore_conf['excel']['cell']['maxSize'] >= filesize:
+            extractors.append(ExcelCellExtractor())
+        if explore_conf['excel']['sharp']['enabled'] and \
+           explore_conf['excel']['sharp']['minSize'] <= filesize and \
+           explore_conf['excel']['sharp']['maxSize'] >= filesize:
+            extractors.append(ExcelSharpExtractor())
+    return extractors
+
 
 def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str):
-    hash = filehash.calculate_file_hash(input_file_path)
+    if not os.path.exists(input_file_path):
+        return
+
+    try:
+        hash = filehash.calculate_file_hash(input_file_path)
+    except PermissionError as e:
+        print(e)
+        return
+
+    filesize = os.path.getsize(input_file_path)
+    if filesize < 1_000:
+        return
+    if filesize > 1_000_000:
+        return
     # ファイル単位でデータベースセッションを作成
     Session = sessionmaker(bind=get_engine())
     session = Session()
     try:
-        reg_document_id = document.get_document_id_by_hash(session, hash)
-        reg_file_id = file.get_file_id_by_hash(session, input_file_path)
-        if reg_document_id is None:
+        reg_document = document.get_document_by_hash(session, hash)
+        reg_file = file.get_file_by_hash(session, input_file_path)
+        if reg_document is None:
             # ドキュメント未登録
             print(f"mitouroku: {input_file_path}")
 
             document_id = document.insert_document(
-                session, hash, os.path.getsize(input_file_path)
+                session, hash, filesize
             )
-            if reg_file_id is None:
+            if reg_file is None:
                 # ファイルが未登録の場合はファイルの登録
                 file_id = file.insert_file(session, document_id, input_file_path, False)
             else:
                 # ファイルが登録済みの場合はファイルとドキュメントの紐付けし直し
-                file.update_document_id(session, reg_file_id, document_id)
-
-            for extractor in extractors:
-                extract_result = extractor.extract(input_file_path)
-                # 抽出失敗した場合はスキップ
-                if extract_result is None:
-                    # print(f"extract fault. path: {input_file_path}, method: {extractor.method}")
-                    continue
-
-                extract_id = extract.insert_extract_data(
-                    session, document_id, extractor.method, extract_result.extract_details
-                )
-
-                for search_text in extract_result.search_texts:
-                    # 短いものはリターン
-                    if len(search_text.text.strip()) <= 0:
-                        continue
-                    search_text_id = search.insert_search_text(
-                        session, extract_id, search_text.text, search_text.unit, search_text.details
-                    )
+                file.update_document_id(session, reg_file.file_id, document_id)
 
         else:
             print(f"tourokuzumi: {input_file_path}")
             # ドキュメント登録済み
-            if reg_file_id is None:
-                file_id = file.insert_file(session, reg_document_id, input_file_path, False)
+            if reg_file is None:
+                file_id = file.insert_file(session, reg_document.document_id, input_file_path, False)
+        for extractor in extractors:
+            if extractor is None:
+                continue
+            if extractor.method in [x.method for x in reg_document.extracts]:
+                continue
+
+            extract_result = extractor.extract(input_file_path)
+            # 抽出失敗した場合はスキップ
+            if extract_result is None:
+                # print(f"extract fault. path: {input_file_path}, method: {extractor.method}")
+                continue
+
+            extract_id = extract.insert_extract_data(
+                session, document_id, extractor.method, extract_result.extract_details
+            )
+
+            for search_text in extract_result.search_texts:
+                # 短いものはリターン
+                if len(search_text.text.strip()) <= 0:
+                    continue
+                search_text_id = search.insert_search_text(
+                    session, extract_id, search_text.text, search_text.unit, search_text.details
+                )
         session.commit()
         # セッションをクローズ
         session.close()
+    except TimeoutError as e:
+        print(f"path: {input_file_path}")
+        print(e)
+
     except Exception as e:
         # print(f"{str(e)} path: {input_file_path}")
         print(f"path: {input_file_path}")

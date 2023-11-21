@@ -12,6 +12,8 @@ class ExcelCellExtractor(Extractor):
         file_texts = []
 
         all_sheet_data = extract_excel_cell(path)
+        if all_sheet_data is None:
+            return None
         for i, (sheet_name, sheet) in enumerate(all_sheet_data.items()):
             page_texts = []
             for cell in sheet:
@@ -55,22 +57,26 @@ def extract_cell_data(cell) -> dict[str, any]:
 
 def extract_excel_cell(file_path) -> dict:
   # Excelファイルを開く
-  workbook = openpyxl.load_workbook(file_path)
+    try:
+        workbook = openpyxl.load_workbook(file_path)
+    except Exception as e:
+        print(e)
+        return None
 
-  # セルのデータを格納するためのリスト
-  all_sheet_data = {}
+    # セルのデータを格納するためのリスト
+    all_sheet_data = {}
 
-  # すべてのシートに対して処理を行う
-  for i, sheet_name in enumerate(list(workbook.sheetnames)):
-      sheet = workbook[sheet_name]
-      all_cell_data = []
+    # すべてのシートに対して処理を行う
+    for i, sheet_name in enumerate(list(workbook.sheetnames)):
+        sheet = workbook[sheet_name]
+        all_cell_data = []
 
-      # シート内のセルに対して処理を行う
-      for row in sheet.iter_rows():
-          for cell in row:
-              cell_data = extract_cell_data(cell)
-              if cell_data is not None:
-                all_cell_data.append(cell_data)
-      all_sheet_data[sheet_name] = all_cell_data
+        # シート内のセルに対して処理を行う
+        for row in sheet.iter_rows():
+            for cell in row:
+                cell_data = extract_cell_data(cell)
+                if cell_data is not None:
+                  all_cell_data.append(cell_data)
+        all_sheet_data[sheet_name] = all_cell_data
 
-  return all_sheet_data
+    return all_sheet_data

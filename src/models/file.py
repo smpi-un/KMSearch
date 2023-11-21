@@ -43,7 +43,7 @@ def fetch_file() -> File:
     return file
 
 
-def get_file_id_by_hash(session: Session, path: str) -> str:
+def get_file_by_hash(session: Session, path: str) -> File:
     """ 
     ファイルパスを引数にとり、保存済みのFileテーブルから同じhashが存在する場合そのfile_idを返す関数.
 
@@ -55,7 +55,7 @@ def get_file_id_by_hash(session: Session, path: str) -> str:
     """
 
     file = session.query(File).filter(File.path == path).first()
-    return file.file_id if file else None
+    return file
 
 def update_document_id(session: Session, file_id, new_document_id):
 

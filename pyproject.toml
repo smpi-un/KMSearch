@@ -1,19 +1,19 @@
 [project]
 name = "kmsearch"
-version = "0.1.0"
+version = "0.5.0"
 description = "Add your description here"
 authors = [
     { name = "Shimpei Ueno", email = "" }
 ]
 dependencies = [
     "sqlalchemy>=2.0.22",
-    "pandas>=2.0.3",
     "easyocr>=1.7.1",
     "PyMuPDF>=1.23.5",
     "pillow>=10.1.0",
     "openpyxl>=3.1.2",
     "toml>=0.10.2",
     "lark>=1.1.8",
+    "pyinstaller>=6.2.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

@@ -5,6 +5,7 @@ import services.searchfile as searchfile
 import services.updatedata as updatedata
 import services.showdocument as showdocument
 from utils.config import load_config
+from sys import exit
 
 def main(config: dict):
     parser = argparse.ArgumentParser(description="フォルダの探索とファイル検索ツール")
@@ -34,16 +35,18 @@ def main(config: dict):
 
     args = parser.parse_args()
 
-    if args.subcommand == "explore":
-        res = explorefiles.explore(args.dir_path, config['explore'], config["ocr"])
-    elif args.subcommand == "update":
-        res = updatedata.update(args.model_path)
-    elif args.subcommand == "search":
-        res = searchfile.search(args.keyword, args.extract_type, args.file_path_pattern, args.out)
-    elif args.subcommand == "showdocument":
-        res = showdocument.show_document(args.path, args.out)
-    else:
-        parser.print_help()
+    match args.subcommand:
+        case "explore":
+            res = explorefiles.explore(args.dir_path, config['explore'], config["ocr"])
+        case "update":
+            res = updatedata.update(args.model_path)
+        case "search":
+            res = searchfile.search(args.keyword, args.extract_type, args.file_path_pattern, args.out)
+        case "showdocument":
+            res = showdocument.show_document(args.path, args.out)
+        case _:
+            parser.print_help()
+            res = 0
     exit(res)
 
 if __name__ == "__main__":

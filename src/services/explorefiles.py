@@ -1,4 +1,4 @@
-import os
+import os, sys
 import utils.filehash as filehash
 from extractor import *
 from models import *
@@ -21,7 +21,7 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
     try:
         filesize = os.path.getsize(input_file_path)
     except FileNotFoundError as e:
-        print(e)
+        print(e, file=sys.stderr)
         return None
     extractors = []
     # 拡張子で場合分けしてExtractorを生成する。
@@ -58,7 +58,7 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
     try:
         hash = filehash.calculate_file_hash(input_file_path)
     except PermissionError as e:
-        print(e)
+        print(e, file=sys.stderr)
         return
 
     filesize = os.path.getsize(input_file_path)
@@ -74,7 +74,7 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
         reg_file = file.get_file_by_hash(session, input_file_path)
         if reg_document is None:
             # ドキュメント未登録
-            print(f"mitouroku: {input_file_path}")
+            print(f"mitouroku: {input_file_path}", file=sys.stdout)
 
             document_id = document.insert_document(
                 session, hash, filesize
@@ -87,7 +87,7 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
                 file.update_document_id(session, reg_file.file_id, document_id)
 
         else:
-            print(f"tourokuzumi: {input_file_path}")
+            print(f"tourokuzumi: {input_file_path}", file=sys.stdout)
             # ドキュメント登録済み
             if reg_file is None:
                 file_id = file.insert_file(session, reg_document.document_id, input_file_path, False)
@@ -100,7 +100,7 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
             extract_result = extractor.extract(input_file_path)
             # 抽出失敗した場合はスキップ
             if extract_result is None:
-                # print(f"extract fault. path: {input_file_path}, method: {extractor.method}")
+                # print(f"extract fault. path: {input_file_path}, method: {extractor.method}", file=sys.stdout)
                 continue
 
             extract_id = extract.insert_extract_data(
@@ -118,12 +118,12 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
         # セッションをクローズ
         session.close()
     except TimeoutError as e:
-        print(f"path: {input_file_path}")
-        print(e)
+        print(f"path: {input_file_path}", file=sys.stderr)
+        print(e, file=sys.stderr)
 
     except Exception as e:
         # print(f"{str(e)} path: {input_file_path}")
-        print(f"path: {input_file_path}")
+        print(f"path: {input_file_path}", file=sys.stderr)
         session.rollback()
         session.close()
         raise e

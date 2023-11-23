@@ -1,1 +1,1 @@
-.\.venv\Scripts\nuitka3-run --onefile --follow-imports src\main.py
+.\.venv\Scripts\nuitka.bat --onefile --follow-imports src\main.py

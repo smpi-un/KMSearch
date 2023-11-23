@@ -1,1 +1,1 @@
-./.venv/Script/python.exe "./src/main.py" %*
+.\.venv\Script\python.exe ".\src\main.py" %*

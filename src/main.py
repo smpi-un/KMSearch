@@ -6,6 +6,7 @@ import services.updatedata as updatedata
 import services.showdocument as showdocument
 from utils.config import load_config
 from sys import exit
+from typing import Literal
 
 def main(config: dict):
     parser = argparse.ArgumentParser(description="フォルダの探索とファイル検索ツール")
@@ -24,8 +25,9 @@ def main(config: dict):
     # 'search' サブコマンド
     search_parser = subparsers.add_parser("search", help="ファイルを検索")
     search_parser.add_argument("keyword", type=str, help="検索キーワード")
-    search_parser.add_argument("--extract_type", type=str, help="抽出タイプ")
+    search_parser.add_argument("--extract_method", type=str, help="抽出タイプ")
     search_parser.add_argument("--file_path_pattern", type=str, help="ファイルパスのパターン")
+    search_parser.add_argument("--unit", type=Literal["word", "page", "file"], help="ファイルパスのパターン", default='page')
     search_parser.add_argument("--out", type=str, help="出力先ファイル名")
 
     # 'showdocument' サブコマンド
@@ -41,8 +43,13 @@ def main(config: dict):
         case "update":
             res = updatedata.update(args.model_path)
         case "search":
-            res = searchfile.search(args.keyword, args.extract_type, args.file_path_pattern, args.out)
-        case "showdocument":
+            res = searchfile.search(args.keyword,
+                                    unit=args.unit,
+                                    extract_method=args.extract_method,
+                                    file_path_pattern=args.file_path_pattern,
+                                    out_path=args.out,
+                                    )
+        case "show":
             res = showdocument.show_document(args.path, args.out)
         case _:
             parser.print_help()

@@ -13,7 +13,8 @@ dependencies = [
     "openpyxl>=3.1.2",
     "toml>=0.10.2",
     "lark>=1.1.8",
-    "pyinstaller>=6.2.0",
+    # "pyinstaller>=6.2.0",
+    "nuitka>=1.9",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

@@ -8,6 +8,7 @@ from models import *
 from lark import Tree
 import utils.formulaparser
 import sys
+from typing import Literal
 
 def tree_to_cond(tree: Tree):
     match tree.data:
@@ -26,7 +27,7 @@ def tree_to_cond(tree: Tree):
         case _:
             raise tree.data
 
-def search(keyword: str, extract_method: str, file_path_pattern: str, out_path: str):
+def search(keyword: str, unit: Literal["word", "page", "file"], extract_method: str, file_path_pattern: str, out_path: str):
   
     Session = sessionmaker(bind=get_engine())
     session = Session()

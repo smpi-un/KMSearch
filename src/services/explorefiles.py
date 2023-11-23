@@ -89,12 +89,13 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
         else:
             print(f"tourokuzumi: {input_file_path}", file=sys.stdout)
             # ドキュメント登録済み
+            document_id = reg_document.document_id
             if reg_file is None:
                 file_id = file.insert_file(session, reg_document.document_id, input_file_path, False)
         for extractor in extractors:
             if extractor is None:
                 continue
-            if extractor.method in [x.method for x in reg_document.extracts]:
+            if reg_document is not None and extractor.method in [x.method for x in reg_document.extracts]:
                 continue
 
             extract_result = extractor.extract(input_file_path)

@@ -1,1 +1,1 @@
-.\.venv\Source\python.exe -m pyinstaller .\src\main.py --onefile
+.\.venv\Scripts\pyinstaller .\src\main.py --onefile

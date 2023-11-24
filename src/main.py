@@ -27,7 +27,7 @@ def main(config: dict):
     search_parser.add_argument("keyword", type=str, help="検索キーワード")
     search_parser.add_argument("--extract_method", type=str, help="抽出タイプ")
     search_parser.add_argument("--file_path_pattern", type=str, help="ファイルパスのパターン")
-    search_parser.add_argument("--unit", type=Literal["word", "page", "file"], help="ファイルパスのパターン", default='page')
+    search_parser.add_argument("--unit", type=str, choices=["word", "page", "file"], help="検索単位", default='page')
     search_parser.add_argument("--out", type=str, help="出力先ファイル名")
 
     # 'showdocument' サブコマンド

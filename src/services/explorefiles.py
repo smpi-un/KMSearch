@@ -29,7 +29,7 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
         if explore_conf['image']['ocr']['enabled'] and \
            explore_conf['image']['ocr']['minSize'] <= filesize and \
            explore_conf['image']['ocr']['maxSize'] >= filesize:
-            extractors.append(ImageOcrExtractor(ocr_conf["model_path"], ocr_conf['languages']))
+            extractors.append(OcrExtractor('image', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
     if ext in explore_conf['pdf']['extensions']:
         if explore_conf['pdf']['text']['enabled'] and \
            explore_conf['pdf']['text']['minSize'] <= filesize and \
@@ -38,7 +38,7 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
         if explore_conf['pdf']['ocr']['enabled'] and \
            explore_conf['pdf']['ocr']['minSize'] <= filesize and \
            explore_conf['pdf']['ocr']['maxSize'] >= filesize:
-            extractors.append(PdfOcrExtractor(ocr_conf["model_path"], ocr_conf['languages']))
+            extractors.append(OcrExtractor('pdf', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
     if ext in explore_conf['excel']['extensions']:
         if explore_conf['excel']['cell']['enabled'] and \
            explore_conf['excel']['cell']['minSize'] <= filesize and \
@@ -62,10 +62,6 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
         return
 
     filesize = os.path.getsize(input_file_path)
-    if filesize < 1_000:
-        return
-    if filesize > 1_000_000:
-        return
     # ファイル単位でデータベースセッションを作成
     Session = sessionmaker(bind=get_engine())
     session = Session()

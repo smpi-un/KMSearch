@@ -2,19 +2,33 @@ import os
 import tempfile
 from .extractor import *
 import utils.ocrimage as ocrimage
+import utils.pdftoimage as pdftoimage
 import utils.multitosingleimages as multitosingleimages
+from typing import Literal
 
-class ImageOcrExtractor(Extractor):
-    method = 'imageOcr'
-    def __init__(self, custom_model_path = '', languages: list[str] = []):
+class OcrExtractor(Extractor):
+    method = 'ocr'
+    def __init__(self, document_type: Literal['pdf', 'image'], custom_model_path:str, languages: list[str], min_word_length: int, min_confident: float):
+        self.document_type = document_type
         self.custom_model_path = custom_model_path
         self.languages = languages
+        self.min_word_length = min_word_length
+        self.min_confident = min_confident
+
     def extract(self, path: str) -> ExtractResult:
         # 一時フォルダを作成
         temp_dir = tempfile.mkdtemp()
 
         # PDF・画像を一時フォルダに画像として保存
-        images = multitosingleimages.save_pages_as_png(path, temp_dir)
+        match self.document_type:
+            case 'pdf':
+                images = pdftoimage.pdf_to_temp_images(path, temp_dir)
+            case 'image':
+                images = multitosingleimages.save_pages_as_png(path, temp_dir)
+            case _ :
+                raise Exception(f'Unmatch type name: {self.document_type}')
+        if images is None:
+            return None
 
         # 画像情報に対してOCRを実行
         file_ocr_result, model_language = ocrimage.ocr_on_images(
@@ -57,8 +71,10 @@ class ImageOcrExtractor(Extractor):
         file_search_text = SearchText('\n'.join(file_texts), SearchTextUnit.file, file_details)
         search_texts.append(file_search_text)
         extract_details = {
-            'customModelPath': self.custom_model_path,
             'modelLanguage' : model_language,
+            'customModelPath' : self.custom_model_path,
+            'languages' : self.languages,
+            'minWordLength' : self.min_word_length,
+            'minConfident' : self.min_confident,
         }
         return ExtractResult(extract_details, search_texts)
-

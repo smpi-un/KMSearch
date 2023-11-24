@@ -40,4 +40,6 @@ maxSize = 1_000_000
 [ocr]
 languages = ["en"]
 systemLanguage = true
-model_path = ""
+modelPath = ""
+minWordLength = 3
+minConfident  = 0.4

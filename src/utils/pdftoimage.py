@@ -13,6 +13,8 @@ def create_temp_images(input_path: str, temp_dir: str) -> list[str]:
 def pdf_to_temp_images(pdf_path: str, temp_dir: str) -> list[str]:
     # PDFを画像に変換して一時フォルダに保存
     pdf_document = fitz.open(pdf_path)
+    if pdf_document.isEncrypted:
+        return None
     image_paths = []
     resolution = 600
 

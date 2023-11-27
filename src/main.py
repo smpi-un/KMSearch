@@ -31,7 +31,7 @@ def main(config: dict):
     search_parser.add_argument("--out", type=str, help="出力先ファイル名")
 
     # 'showdocument' サブコマンド
-    showdocument_parser = subparsers.add_parser("showdocument", help="パスを指定してドキュメント情報を表示")
+    showdocument_parser = subparsers.add_parser("show", help="パスを指定してドキュメント情報を表示")
     showdocument_parser.add_argument("path", type=str, help="表示対象ドキュメント")
     showdocument_parser.add_argument("--out", type=str, help="出力先ファイル名")
 

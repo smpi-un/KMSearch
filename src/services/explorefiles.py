@@ -29,7 +29,7 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
         if explore_conf['image']['ocr']['enabled'] and \
            explore_conf['image']['ocr']['minSize'] <= filesize and \
            explore_conf['image']['ocr']['maxSize'] >= filesize:
-            extractors.append(OcrExtractor('image', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
+            extractors.append(EasyOcrExtractor('image', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
     if ext in explore_conf['pdf']['extensions']:
         if explore_conf['pdf']['text']['enabled'] and \
            explore_conf['pdf']['text']['minSize'] <= filesize and \
@@ -38,7 +38,7 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
         if explore_conf['pdf']['ocr']['enabled'] and \
            explore_conf['pdf']['ocr']['minSize'] <= filesize and \
            explore_conf['pdf']['ocr']['maxSize'] >= filesize:
-            extractors.append(OcrExtractor('pdf', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
+            extractors.append(EasyOcrExtractor('pdf', ocr_conf["modelPath"], ocr_conf['languages'], ocr_conf['minWordLength'], ocr_conf['minConfident']))
     if ext in explore_conf['excel']['extensions']:
         if explore_conf['excel']['cell']['enabled'] and \
            explore_conf['excel']['cell']['minSize'] <= filesize and \

@@ -1,7 +1,14 @@
-import os
+import os, sys
 from PIL import Image, ImageSequence
+import pillow_avif # enable to load 'avif'
 
-def save_pages_as_png(tiff_path, output_folder):
+# Twice of 300 dpi A0 paper
+# (33.1in * 300dpi) x (46.8in * 300dpi)
+# = 9930px x 14040px
+# = 139477200px
+Image.MAX_IMAGE_PIXELS = 139_477_200 * 2
+
+def save_pages_as_png(tiff_path, output_folder) -> list[str]:
     # フォルダが存在しない場合は作成
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -9,20 +16,23 @@ def save_pages_as_png(tiff_path, output_folder):
     saved_paths = []  # 保存したPNGファイルのパスを格納するリスト
 
     # TIFFファイルを開く
-    with Image.open(tiff_path) as img:
-        # すべてのページを取得し、PNGファイルとして保存
-        for i, page in enumerate(ImageSequence.Iterator(img)):
-            # ファイル名の生成
-            file_name = f"page_{i}.png"
-            # ファイルの保存パス
-            save_path = os.path.join(output_folder, file_name)
-            # 画像をPNGファイルとして保存
-            page = page.convert("RGB")
-            page.save(save_path, format="PNG")
-            # 保存したファイルのパスをリストに追加
-            saved_paths.append(save_path)
+    try:
+        with Image.open(tiff_path) as img: # すべてのページを取得し、PNGファイルとして保存
+            for i, page in enumerate(ImageSequence.Iterator(img)):
+                # ファイル名の生成
+                file_name = f"page_{i}.png"
+                # ファイルの保存パス
+                save_path = os.path.join(output_folder, file_name)
+                # 画像をPNGファイルとして保存
+                page = page.convert("RGB")
+                page.save(save_path, format="PNG")
+                # 保存したファイルのパスをリストに追加
+                saved_paths.append(save_path)
 
-    return saved_paths
+        return saved_paths
+    except Image.DecompressionBombError as e:
+        print(e, file=sys.stderr)
+        return None
 
 if __name__ == '__main__':
   # マルチページTIFFファイルのパス

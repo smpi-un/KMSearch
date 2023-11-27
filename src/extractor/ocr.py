@@ -6,8 +6,8 @@ import utils.pdftoimage as pdftoimage
 import utils.multitosingleimages as multitosingleimages
 from typing import Literal
 
-class OcrExtractor(Extractor):
-    method = 'ocr'
+class EasyOcrExtractor(Extractor):
+    method = 'easyocr'
     def __init__(self, document_type: Literal['pdf', 'image'], custom_model_path:str, languages: list[str], min_word_length: int, min_confident: float):
         self.document_type = document_type
         self.custom_model_path = custom_model_path

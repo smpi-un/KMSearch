@@ -24,6 +24,12 @@ HPND License
 Complete license text can be found here:
 https://github.com/python-pillow/Pillow/blob/main/LICENSE
 
+### pillow-avif-plugin
+BSD 2-Clause "Simplified" License
+
+Complete license text can be found here:
+https://github.com/fdintino/pillow-avif-plugin/blob/main/LICENSE
+
 ### OpenPyxl
 MIT Licence
 

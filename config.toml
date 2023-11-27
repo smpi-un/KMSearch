@@ -8,12 +8,12 @@ extensions = [".pdf"]
 [explore.pdf.ocr]
 enabled = true
 minSize = 1_000
-maxSize = 1_000_000
+maxSize = 1_000_000_000
 
 [explore.pdf.text]
 enabled = true
 minSize = 1_000
-maxSize = 1_000_000
+maxSize = 1_000_000_000
 
 [explore.image]
 extensions = [
@@ -21,9 +21,9 @@ extensions = [
     ".jpg", ".jpeg", ".bmp", ".png",
 ]
 [explore.image.ocr]
-enabled = false
+enabled = true
 minSize = 1_000
-maxSize = 1_000_000
+maxSize = 1_000_000_000
 [explore.excel]
 extensions = [ ".xlsx", ".xlsm", ]
 

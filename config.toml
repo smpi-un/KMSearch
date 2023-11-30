@@ -3,8 +3,12 @@
 url = "sqlite:///kmsearch.sqlite"
 
 [explore]
+# units = ["file", "page", "word"]
+units = ["page"]
+
 [explore.pdf]
 extensions = [".pdf"]
+
 [explore.pdf.ocr]
 enabled = true
 minSize = 1_000
@@ -37,9 +41,13 @@ enabled = true
 minSize = 1_000
 maxSize = 1_000_000
 
-[ocr]
+[common]
+[common.ocr]
 languages = ["en"]
 systemLanguage = true
 modelPath = ""
 minWordLength = 3
 minConfident  = 0.4
+
+[common.image]
+maxImagePixels = 1_115_817_600

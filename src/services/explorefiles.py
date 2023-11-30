@@ -4,6 +4,7 @@ from extractor import *
 from models import *
 from sqlalchemy.orm import sessionmaker, relationship
 from database_engine import get_engine
+from typing import Literal
 
 
 def explore(base_dirs: list[str], explore_conf: dict, ocr_conf: dict):
@@ -14,7 +15,7 @@ def explore(base_dirs: list[str], explore_conf: dict, ocr_conf: dict):
                 extractors = choose_extractors(input_file_path, explore_conf, ocr_conf)
                 if extractors is None or extractors == []:
                     continue
-                extract_and_insert(extractors, input_file_path)
+                extract_and_insert(extractors, input_file_path, explore_conf['units'])
 
 def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) -> list[Extractor]:
     ext = os.path.splitext(input_file_path)[1].lower()
@@ -51,7 +52,8 @@ def choose_extractors(input_file_path: str, explore_conf: dict, ocr_conf: dict) 
     return extractors
 
 
-def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str):
+def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str,
+                       extract_units: list[Literal['file', 'page', 'word']]):
     if not os.path.exists(input_file_path):
         return
 
@@ -68,9 +70,10 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
     try:
         reg_document = document.get_document_by_hash(session, hash)
         reg_file = file.get_file_by_hash(session, input_file_path)
+
+        print(f"{input_file_path}", file=sys.stdout)
         if reg_document is None:
             # ドキュメント未登録
-            print(f"mitouroku: {input_file_path}", file=sys.stdout)
 
             document_id = document.insert_document(
                 session, hash, filesize
@@ -83,7 +86,6 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
                 file.update_document_id(session, reg_file.file_id, document_id)
 
         else:
-            print(f"tourokuzumi: {input_file_path}", file=sys.stdout)
             # ドキュメント登録済み
             document_id = reg_document.document_id
             if reg_file is None:
@@ -101,12 +103,14 @@ def extract_and_insert(extractors: list[pdftext.Extractor], input_file_path: str
                 continue
 
             extract_id = extract.insert_extract_data(
-                session, document_id, extractor.method, extract_result.extract_details
+                session, document_id, extractor.method, {**extract_result.extract_details, **{'units': extract_units}}
             )
 
             for search_text in extract_result.search_texts:
                 # 短いものはリターン
                 if len(search_text.text.strip()) <= 0:
+                    continue
+                if search_text.unit not in extract_units:
                     continue
                 search_text_id = search.insert_search_text(
                     session, extract_id, search_text.text, search_text.unit, search_text.details

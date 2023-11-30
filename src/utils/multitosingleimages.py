@@ -3,10 +3,10 @@ from PIL import Image, ImageSequence
 import pillow_avif # enable to load 'avif'
 
 # Twice of 300 dpi A0 paper
-# (33.1in * 300dpi) x (46.8in * 300dpi)
-# = 9930px x 14040px
+# (33.1in * 600dpi) x (46.8in * 600dpi)
+# = 19860px x 28080px
 # = 139477200px
-Image.MAX_IMAGE_PIXELS = 139_477_200 * 2
+Image.MAX_IMAGE_PIXELS = 557_908_800 * 2
 
 def save_pages_as_png(tiff_path, output_folder) -> list[str]:
     # フォルダが存在しない場合は作成

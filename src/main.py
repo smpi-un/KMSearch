@@ -39,7 +39,7 @@ def main(config: dict):
 
     match args.subcommand:
         case "explore":
-            res = explorefiles.explore(args.dir_path, config['explore'], config["ocr"])
+            res = explorefiles.explore(args.dir_path, config['explore'], config["common"]["ocr"])
         case "update":
             res = updatedata.update(args.model_path)
         case "search":

@@ -69,7 +69,7 @@ def search(keyword: str, unit: Literal["word", "page", "file"], extract_method: 
           search_text_dict[search_text.search_text_id] = search_text.to_dict()
   
     # JSON形式に変換して出力
-    json_data = json.dumps(document_dict, indent=2, ensure_ascii=False)
+    json_data = json.dumps({"status": "success", "data": document_dict}, indent=2, ensure_ascii=False)
     
     # 結果を、出力先ファイルパスがある場合はファイルへ、ない場合は標準出力へ出力。
     if out_path is None or out_path == '':

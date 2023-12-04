@@ -1,41 +1,62 @@
-import tkinter as tk
-from tkinter import ttk
-
 import subprocess
 import os
 import platform
+import tkinter as tk
+from tkinter import ttk
+import threading
 
+# Global to keep reference to the process
+process = None
 
-def execute_batch(subcommand: str, args: list[str]):
+def handle_output(process, result_text):
+    for line in iter(process.stdout.readline, b''):
+        # 末尾の改行を削除しデコード
+        line = line.rstrip().decode()
+        result_text.insert(tk.END, line + '\n')
+        # スクロール
+        result_text.see(tk.END)
+
+def abort_process(result_text):
+    global process
+    if process:
+        process.terminate()
+        result_text.insert(tk.END, "Aborted.\n")
+        result_text.see(tk.END)
+    result_text.insert(tk.END, '終わったよ！\n')
+    result_text.see(tk.END)
+
+def execute_batch(subcommand: str, args: list[str], result_text: tk.Text):
+    global process
     if platform.system() == "Windows":
         script_name = "kmsearch.bat"
     else:
         script_name = "kmsearch.sh"
-    batch_file_path = os.path.join(os.path.dirname(__file__), script_name)
+    batch_file_path = os.path.join(os.path.dirname(__file__), '../', script_name)
 
     arguments = [subcommand] + args
 
     try:
-        subprocess.run([batch_file_path] + arguments, check=True)
-        print("Batch file executed successfully.")
+        result_text.insert(tk.END, batch_file_path + "\n")
+
+        process = subprocess.Popen([batch_file_path] + arguments,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   bufsize=1)
+
+        thread = threading.Thread(target=handle_output, args=(process, result_text))
+        thread.start()
+
     except subprocess.CalledProcessError as e:
-        print(f"Error executing batch file: {e}")
+        result_text.insert(tk.END, f"Error executing batch file: {e}\n")
 
-
-# Tkinterウィンドウの作成
 root = tk.Tk()
 root.title("Batch File Executor")
 
-# Notebook（タブ）を作成
 notebook = ttk.Notebook(root)
 
 tab1 = ttk.Frame(notebook)
 notebook.add(tab1, text='Tab')
 
-# タブ内のコンテンツを追加
-# label = tk.Label(tab, text=f"This is the {tab_name} tab")
-# label.pack(padx=10, pady=10)
-# 入力ボックス、参照ボタン、探索ボタンを配置
 input_label = tk.Label(tab1, text="Input:")
 input_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
 
@@ -48,27 +69,23 @@ browse_button.grid(row=1, column=2, padx=10, pady=10)
 search_button = tk.Button(tab1, text="Search", command=lambda : None)
 search_button.grid(row=1, column=3, padx=10, pady=10, sticky="w")
 
-# 結果表示用のテキストフィールドを配置
 result_text = tk.Text(tab1, height=5, width=50)
 result_text.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
-# テキストフィールドの列にのみ重みを設定してリサイズに対応
 tab1.grid_columnconfigure(3, weight=1)
 
-# 行の重みを設定してリサイズに対応
 tab1.grid_rowconfigure(2, weight=1)
 
-
-# タブを配置
 notebook.pack(expand=True, fill="both")
 
-
-
-# ボタンの作成
 button = tk.Button(
-    root, text="Execute Batch File", command=lambda: execute_batch("explore", ["."])
+    root, text="Execute Batch File", command=lambda: execute_batch("explore", [input_entry.get()], result_text)
 )
 button.pack(pady=20)
 
-# ウィンドウの表示
+abort_button = tk.Button(
+    root, text="Abort", command=lambda: abort_process(result_text)
+)
+abort_button.pack(pady=20)
+
 root.mainloop()
